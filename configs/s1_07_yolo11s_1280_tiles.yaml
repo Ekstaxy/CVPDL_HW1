@@ -1,0 +1,6 @@
+# Tiles are ~5x more images per epoch, so fewer epochs for a similar number of iterations.
+base: s1_03_yolo11s_1280.yaml
+parent: s1_03_yolo11s_1280
+notes: + tiled training (800 px tiles, 20 % overlap, plus full images), 15 epochs
+data: {tiles: {size: 800, overlap: 0.2, include_full: true}}
+train: {epochs: 15, close_mosaic: 3, patience: 15}

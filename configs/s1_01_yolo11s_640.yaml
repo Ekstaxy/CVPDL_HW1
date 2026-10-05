@@ -1,0 +1,4 @@
+base: base.yaml
+stage: s1
+notes: baseline, default recipe at 640
+train: {imgsz: 640, batch: 16}

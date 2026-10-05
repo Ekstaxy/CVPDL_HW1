@@ -1,0 +1,4 @@
+base: s1_01_yolo11s_640.yaml
+parent: s1_01_yolo11s_640
+notes: resolution 640 -> 1024
+train: {imgsz: 1024, batch: 8}

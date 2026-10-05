@@ -1,0 +1,48 @@
+# Defaults shared by every experiment. An experiment file sets `base: base.yaml` (or another
+# experiment) and lists only what it changes.
+stage: s0
+parent: null            # experiment this one is compared against in docs/EXPERIMENTS.md
+notes: ""
+seed: 0
+vram_cap_gb: 11.5       # hard per-process cap; the homework limit is 12 GB
+
+data:
+  root: dataset
+  rfs_thresh: null      # repeat-factor sampling threshold, e.g. 0.5
+  tiles: null           # {size: 800, overlap: 0.2, include_full: true}
+
+model:
+  family: yolo          # yolo | dfine
+  arch: null            # optional architecture yaml (configs/models/...); weights are transferred into it
+  weights: checkpoints/yolo11s.pt   # COCO-pretrained
+
+train:                  # passed to the framework trainer
+  imgsz: 640
+  epochs: 50
+  batch: 16
+  workers: 12
+  optimizer: auto
+  cos_lr: true
+  warmup_epochs: 3
+  close_mosaic: 10
+  patience: 30
+  amp: true
+  deterministic: true
+  extra: {}             # any other framework argument (augmentation etc.)
+
+predict:
+  imgsz: null           # null = train.imgsz
+  conf: 0.001
+  iou: 0.6              # model NMS IoU
+  max_det: 1000
+  per_class_topk: 100   # the metric scores at most 100 detections per class per image
+  scales: [1.0]         # multi-scale TTA factors on imgsz
+  hflip: false
+  slice: null           # {size: 800, overlap: 0.2, imgsz: 1280}
+  merge: nms            # nms | wbf, used when there is more than one view
+  merge_iou: 0.6
+
+wandb:
+  enabled: true
+  project: CVPDL_HW1
+  entity: null

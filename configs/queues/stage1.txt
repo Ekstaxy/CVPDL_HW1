@@ -1,0 +1,19 @@
+# Stage 1: one change per run, ordered by priority. Run with:
+#   nohup setsid scripts/run_queue.sh configs/queues/stage1.txt > results/queue_stage1.log 2>&1 &
+s1_01_yolo11s_640
+s1_02_yolo11s_1024
+s1_03_yolo11s_1280
+s1_04_yolo11s_p2_1280
+s1_09_yolo11m_1280
+s1_05_yolo11s_1280_aug
+s1_06_yolo11s_1280_rfs
+s1_07_yolo11s_1280_tiles
+s1_08_yolo12s_1280
+s1_10_dfine_s_960
+s1_11_yolo26s_1280
+# inference sweep (no training): sliced inference for the tile-trained model, then the 2 best runs
+!.venv/bin/python scripts/tune_postprocess.py --ids s1_07_yolo11s_1280_tiles --test-best
+!.venv/bin/python scripts/tune_postprocess.py --top 2 --test-best
+# first scale-up guess, so the GPU keeps working after the sweep
+s2_01_yolo11m_p2_1280
+!.venv/bin/python scripts/tune_postprocess.py --top 3 --test-best

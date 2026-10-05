@@ -1,0 +1,7 @@
+# First scale-up guess, queued behind stage 1 so the GPU is not idle: m size + P2 head, longer schedule.
+base: s1_09_yolo11m_1280.yaml
+stage: s2
+parent: s1_09_yolo11m_1280
+notes: m + P2 head, 100 epochs
+model: {arch: configs/models/yolo11m-p2.yaml}
+train: {batch: 2, epochs: 100, patience: 40}

@@ -1,0 +1,8 @@
+# D-FINE-S fine-tuned from its COCO checkpoint with the official repo (third_party/D-FINE).
+# The Ultralytics-only keys inherited from base.yaml (optimizer, cos_lr, ...) are ignored here.
+base: base.yaml
+stage: s1
+parent: s1_02_yolo11s_1024
+notes: D-FINE-S (DETR family), 960 input, 500 queries
+model: {family: dfine, size: s, weights: checkpoints/dfine_s_coco.pth, num_queries: 500}
+train: {imgsz: 960, epochs: 48, batch: 4, workers: 8, lr: 0.0001, no_aug_epochs: 6}

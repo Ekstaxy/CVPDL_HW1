@@ -1,0 +1,5 @@
+base: s1_03_yolo11s_1280.yaml
+parent: s1_03_yolo11s_1280
+notes: model size s -> m, 60 epochs
+model: {weights: checkpoints/yolo11m.pt}
+train: {batch: 3, epochs: 60}

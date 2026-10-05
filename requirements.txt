@@ -1,0 +1,20 @@
+--extra-index-url https://download.pytorch.org/whl/cu121
+torch==2.5.1
+torchvision==0.20.1
+ultralytics
+torchmetrics
+pycocotools
+faster-coco-eval
+ensemble-boxes
+wandb
+pyyaml
+pandas
+matplotlib
+opencv-python
+tqdm
+scipy
+tensorboard
+pytest
+loguru
+calflops
+transformers

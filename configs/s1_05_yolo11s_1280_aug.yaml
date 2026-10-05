@@ -1,0 +1,4 @@
+base: s1_03_yolo11s_1280.yaml
+parent: s1_03_yolo11s_1280
+notes: + stronger aug (mixup 0.15, scale 0.7, hsv_v 0.5)
+train: {extra: {mixup: 0.15, scale: 0.7, hsv_v: 0.5}}

@@ -1,0 +1,4 @@
+base: s1_03_yolo11s_1280.yaml
+parent: s1_03_yolo11s_1280
+notes: + repeat-factor sampling of rare-class images (t = 0.5)
+data: {rfs_thresh: 0.5}

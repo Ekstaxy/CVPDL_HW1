@@ -1,0 +1,4 @@
+base: s1_03_yolo11s_1280.yaml
+parent: s1_03_yolo11s_1280
+notes: YOLO26s (NMS-free head) instead of YOLO11s
+model: {weights: checkpoints/yolo26s.pt}
