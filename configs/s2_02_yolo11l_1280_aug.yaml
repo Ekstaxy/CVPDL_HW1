@@ -1,0 +1,7 @@
+# Stage 2: the two proven levers (resolution, model size) plus the aug that helped, long schedule.
+base: s1_05_yolo11s_1280_aug.yaml
+stage: s2
+parent: s1_09_yolo11m_1280
+notes: YOLO11l 1280 + aug, 100 epochs
+model: {weights: checkpoints/yolo11l.pt}
+train: {batch: 2, epochs: 100, patience: 40}

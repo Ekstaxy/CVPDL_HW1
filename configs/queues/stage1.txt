@@ -17,3 +17,9 @@ s1_11_yolo26s_1280
 # first scale-up guess, so the GPU keeps working after the sweep
 s2_01_yolo11m_p2_1280
 !.venv/bin/python scripts/tune_postprocess.py --top 3 --test-best
+# ---- stage 2: scale the winning recipe (appended 10/06 17:30) ----
+s2_02_yolo11l_1280_aug
+s2_03_dfine_m_1280
+s2_04_yolo11m_1536_aug
+s2_05_dfine_l_1280
+!.venv/bin/python scripts/tune_postprocess.py --top 4 --test-best

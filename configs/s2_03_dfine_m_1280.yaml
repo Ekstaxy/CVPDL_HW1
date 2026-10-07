@@ -1,0 +1,7 @@
+# D-FINE-S was still improving at epoch 48 and matched YOLO11s-1280 from a 960 input: scale it up.
+base: s1_10_dfine_s_960.yaml
+stage: s2
+parent: s1_10_dfine_s_960
+notes: D-FINE-M, 1280 input, 72 epochs
+model: {size: m, weights: checkpoints/dfine_m_coco.pth}
+train: {imgsz: 1280, epochs: 72, batch: 4, no_aug_epochs: 8}

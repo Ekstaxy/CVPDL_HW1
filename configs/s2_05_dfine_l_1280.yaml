@@ -1,0 +1,5 @@
+base: s2_03_dfine_m_1280.yaml
+parent: s2_03_dfine_m_1280
+notes: D-FINE-L, 1280 input, 72 epochs
+model: {size: l, weights: checkpoints/dfine_l_coco.pth}
+train: {batch: 2}

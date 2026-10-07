@@ -1,0 +1,7 @@
+# Resolution was not saturated at 1280 and test has 20 % 2000 px images that val lacks.
+base: s1_05_yolo11s_1280_aug.yaml
+stage: s2
+parent: s1_09_yolo11m_1280
+notes: YOLO11m 1536 + aug, 100 epochs
+model: {weights: checkpoints/yolo11m.pt}
+train: {imgsz: 1536, batch: 2, epochs: 100, patience: 40}
