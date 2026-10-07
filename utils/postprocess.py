@@ -26,6 +26,9 @@ def build_views(img, pcfg, base_imgsz):
     """Each view is (array, imgsz, back) where back(dets) maps detections to original coordinates."""
     h, w = img.shape[:2]
     views = []
+    if pcfg.get("native_scale"):
+        # infer at the image's own resolution (times a factor), never below the configured size
+        base_imgsz = max(base_imgsz, int(round(max(h, w) * pcfg["native_scale"] / 32) * 32))
     for scale in pcfg.get("scales") or [1.0]:
         imgsz = int(round(base_imgsz * scale / 32) * 32)
         views.append((img, imgsz, lambda d: d))

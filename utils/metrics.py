@@ -123,3 +123,4 @@ def validate_csv(path, sample_csv, num_classes=10):
         assert (a[:, 4:] > 0).all() and (a[:, 2:4] >= 0).all(), f"{r['image_id']}: box"
         n += len(a)
     return {"rows": len(rows), "detections": n}
+

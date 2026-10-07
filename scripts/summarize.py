@@ -36,6 +36,7 @@ def f(v, nd=4):
 
 
 def main():
+    kaggle = yaml.safe_load((ROOT / "docs" / "kaggle_scores.yaml").read_text()) or {}
     runs = collect()
     by_id = {r["id"]: r for r in runs}
     lines = [
@@ -45,8 +46,8 @@ def main():
         "mAP50:95 computed from the Kaggle-format CSV with the TA's torchmetrics call.",
         f"Strong baseline {STRONG}, score to beat {TARGET}.",
         "",
-        "| id | stage | model | imgsz | epochs | change | parent | mAP50:95 | Δ parent | mAP50 | mAP75 | mAP small | weakest 3 classes | train h | peak VRAM GB | status |",
-        "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|",
+        "| id | stage | model | imgsz | epochs | change | parent | mAP50:95 | Kaggle | Δ parent | mAP50 | mAP75 | mAP small | weakest 3 classes | train h | peak VRAM GB | status |",
+        "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|",
     ]
     for r in runs:
         c, m, t = r["cfg"], r["m"], r["t"]
@@ -57,16 +58,16 @@ def main():
         weak = ", ".join(f"{k} {v:.2f}" for k, v in sorted(m["per_class"].items(), key=lambda kv: kv[1])[:3]) if m else "–"
         lines.append(
             f"| {r['id']} | {c.get('stage')} | {model} | {c['train']['imgsz']} | {c['train']['epochs']} | {c.get('notes', '')} | {parent or '–'} | "
-            f"{f(m and m['map'])} | {delta} | {f(m and m['map_50'])} | {f(m and m['map_75'])} | {f(m and m['map_small'])} | {weak} | "
+            f"{f(m and m['map'])} | {f(kaggle.get(r['id']), 5)} | {delta} | {f(m and m['map_50'])} | {f(m and m['map_75'])} | {f(m and m['map_small'])} | {weak} | "
             f"{f(t.get('train_hours'), 2)} | {f(t.get('peak_vram_gb_train'), 1)} | {r['status']} |"
         )
     var_rows = [(r, tag, v) for r in runs for tag, v in r["variants"].items()]
     if var_rows:
         lines += ["", "## Inference variants (same weights, different inference settings)", "",
-                  "| id | variant | mAP50:95 | Δ default | mAP50 | mAP small | s / image | peak VRAM GB |", "|---|---|---|---|---|---|---|---|"]
+                  "| id | variant | mAP50:95 | Kaggle | Δ default | mAP50 | mAP small | s / image | peak VRAM GB |", "|---|---|---|---|---|---|---|---|---|"]
         for r, tag, v in var_rows:
             delta = f"{v['map'] - r['m']['map']:+.4f}" if r["m"] else "–"
-            lines.append(f"| {r['id']} | {tag} | {v['map']:.4f} | {delta} | {v['map_50']:.4f} | {v['map_small']:.4f} | {v['sec_per_image']} | {v['peak_vram_gb_infer']} |")
+            lines.append(f"| {r['id']} | {tag} | {v['map']:.4f} | {f(kaggle.get(f"{r['id']}/eval_{tag}"), 5)} | {delta} | {v['map_50']:.4f} | {v['map_small']:.4f} | {v['sec_per_image']} | {v['peak_vram_gb_infer']} |")
     scored = [r for r in runs if r["m"]]
     if scored:
         best = max(scored, key=lambda r: r["m"]["map"])
