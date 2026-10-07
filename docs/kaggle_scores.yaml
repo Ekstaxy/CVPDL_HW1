@@ -3,3 +3,5 @@
 s1_03_yolo11s_1280: 0.25918
 s1_09_yolo11m_1280: 0.29459
 s1_09_yolo11m_1280/eval_slice800_hflip: 0.32198
+s2_05_dfine_l_1280/eval_slice800: 0.35387
+_ensemble/wbf4: 0.37640
