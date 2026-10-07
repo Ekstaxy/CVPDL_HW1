@@ -1,0 +1,5 @@
+base: s2_05_dfine_l_1280.yaml
+stage: s3
+parent: s2_05_dfine_l_1280
+notes: D-FINE-L, 1536 input (1280 -> 1536). batch 1 to fit 12 GB, so BatchNorm stats are frozen (two batch-1 runs with live BN diverged to NaN; epoch-0 val 0.065 vs 0.232 at 1280); lr halved to 5e-5. 72 epochs
+train: {imgsz: 1536, batch: 1, lr: 0.00005, freeze_bn: true}

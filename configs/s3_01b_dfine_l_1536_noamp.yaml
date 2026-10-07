@@ -1,0 +1,4 @@
+base: s3_01_dfine_l_1536.yaml
+parent: s2_05_dfine_l_1280
+notes: fallback for s3_01 if it diverges again - same recipe with mixed precision off
+train: {amp: false}

@@ -1,0 +1,6 @@
+# Stage 3: the one remaining GPU experiment, then its inference sweep. Run with:
+#   nohup setsid scripts/run_queue.sh configs/queues/stage3.txt > results/queue_stage3.log 2>&1 &
+s3_01_dfine_l_1536
+# if it diverged again (no DONE marker), rerun once without mixed precision
+![ -f results/s3_01_dfine_l_1536/DONE ] || scripts/run_experiment.sh s3_01b_dfine_l_1536_noamp
+!.venv/bin/python scripts/tune_postprocess.py --ids $([ -f results/s3_01_dfine_l_1536/DONE ] && echo s3_01_dfine_l_1536 || echo s3_01b_dfine_l_1536_noamp) --test-best

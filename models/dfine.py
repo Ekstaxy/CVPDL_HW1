@@ -140,6 +140,11 @@ class DFineAdapter:
             f"cap = {cap!r}\n"
             "if cap: torch.cuda.set_per_process_memory_fraction(min(1.0, cap * 1024**3 / torch.cuda.get_device_properties(0).total_memory), 0)\n"
             "sys.argv = ['train.py'] + sys.argv[1:]\n"
+            # train.freeze_bn: keep every BatchNorm in eval mode (running stats stay at their COCO values,
+            # affine params still train). Needed at batch 1, where per-batch statistics are one image.
+            f"if {bool(self.cfg['train'].get('freeze_bn', False))!r}:\n"
+            "    import torch.nn as nn\n"
+            "    nn.modules.batchnorm._BatchNorm.train = lambda self, mode=True: nn.Module.train(self, False)\n"
             "runpy.run_path('train.py', run_name='__main__')\n"
             "print('PEAK_VRAM_GB', round(torch.cuda.max_memory_reserved() / 1024**3, 2))\n"
         )
@@ -197,7 +202,13 @@ class DFineAdapter:
             # positional embeddings and anchors are built for one input size, so one model per size
             c = YAMLConfig(str(cfg_path), eval_spatial_size=[imgsz, imgsz], DFINEPostProcessor={"num_top_queries": top_k})
             state = torch.load(self.weights, map_location="cpu", weights_only=False)
-            c.model.load_state_dict(state["ema"]["module"] if "ema" in state else state["model"])
+            sd = state["ema"]["module"] if "ema" in state else state["model"]
+            # anchors / valid_mask are pure functions of eval_spatial_size and were rebuilt above for this
+            # imgsz; the checkpoint holds the training-size ones, so skip them and load everything else strictly
+            sd = {k: v for k, v in sd.items() if not k.endswith(("decoder.anchors", "decoder.valid_mask"))}
+            missing, unexpected = c.model.load_state_dict(sd, strict=False)
+            bad = [k for k in missing if not k.endswith(("decoder.anchors", "decoder.valid_mask"))]
+            assert not bad and not unexpected, f"D-FINE state_dict mismatch: missing {bad}, unexpected {unexpected}"
             self._models = {key: (c.model.deploy().cuda().eval(), c.postprocessor.deploy().cuda())}
         return self._models[key]
 
