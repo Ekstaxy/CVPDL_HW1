@@ -81,10 +81,11 @@ def wbf(parts, weights=None, iou_thr=0.6, skip_box_thr=0.001, conf_type="avg"):
     """Weighted boxes fusion over a list of detection arrays (views or models) of one image."""
     from ensemble_boxes import weighted_boxes_fusion
 
-    parts = [p for p in parts if len(p)]
-    if not parts:
+    # keep empty members in the list so `weights` stays aligned and the score rescaling still counts them
+    nonempty = [p for p in parts if len(p)]
+    if not nonempty:
         return EMPTY
-    scale = float(max(p[:, :4].max() for p in parts)) + 1.0
+    scale = float(max(p[:, :4].max() for p in nonempty)) + 1.0
     boxes, scores, labels = weighted_boxes_fusion(
         [(p[:, :4] / scale).clip(0, 1).tolist() for p in parts],
         [p[:, 4].tolist() for p in parts],
@@ -107,8 +108,10 @@ def predict_images(adapter, images, pcfg, base_imgsz, batch=8):
     parts = [[] for _ in images]
     for imgsz in sorted({j[2] for j in jobs}):
         group = [j for j in jobs if j[2] == imgsz]
-        for k in range(0, len(group), batch):
-            chunk = group[k : k + batch]
+        # large views get a smaller batch so inference stays under the VRAM cap (results do not depend on it)
+        b = pcfg.get("batch") or (batch if imgsz <= 1600 else 2)
+        for k in range(0, len(group), b):
+            chunk = group[k : k + b]
             outs = adapter.predict_arrays([c[1] for c in chunk], imgsz, pcfg)
             for (i, _, _, back), d in zip(chunk, outs):
                 parts[i].append(back(d))

@@ -131,3 +131,46 @@ def write_yolo_data_yaml(cfg, path):
     names = dict(enumerate(class_names(cfg)))
     Path(path).write_text(yaml.safe_dump({"path": str(root), "train": train, "val": "images/val", "names": names}))
     return path
+
+
+def tiles_coco(cfg, size, overlap=0.2, min_vis=0.4, include_full=True):
+    """COCO json (integer ids, absolute file names) of the TRAIN tiles from make_tiles, plus the full train
+    images when include_full. For trainers that read COCO (D-FINE). Cached next to the tiles."""
+    from PIL import Image
+
+    tag = f"tiles_{size}_{int(overlap * 100)}" + ("_full" if include_full else "")
+    out = CACHE / "dfine" / f"instances_train_{tag}.json"
+    if out.exists():
+        return out
+    tile_paths = make_tiles(cfg, size, overlap, min_vis)
+    d = json.loads(ann_json(cfg, "train").read_text())
+    images, anns = [], []
+
+    def add_image(path, w, h):
+        images.append({"id": len(images), "file_name": str(path), "width": w, "height": h})
+        return images[-1]["id"]
+
+    for p in tile_paths:
+        p = Path(p)
+        w, h = Image.open(p).size
+        iid = add_image(p, w, h)
+        lab = p.parent.parent.parent / "labels" / "train" / f"{p.stem}.txt"
+        for line in lab.read_text().split("\n"):
+            if not line.strip():
+                continue
+            c, cx, cy, bw, bh = line.split()
+            bw, bh = float(bw) * w, float(bh) * h
+            x, y = float(cx) * w - bw / 2, float(cy) * h - bh / 2
+            anns.append({"id": len(anns) + 1, "image_id": iid, "category_id": int(c), "bbox": [x, y, bw, bh],
+                         "area": bw * bh, "iscrowd": 0})
+    if include_full:
+        img_dir = data_root(cfg) / "images" / "train"
+        remap = {}
+        for im in d["images"]:
+            remap[im["id"]] = add_image(img_dir / im["file_name"], im["width"], im["height"])
+        for a in d["annotations"]:
+            anns.append({"id": len(anns) + 1, "image_id": remap[a["image_id"]], "category_id": a["category_id"],
+                         "bbox": a["bbox"], "area": a["area"], "iscrowd": 0})
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps({"images": images, "annotations": anns, "categories": d["categories"]}))
+    return out

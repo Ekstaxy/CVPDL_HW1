@@ -18,7 +18,7 @@ import torch.nn.functional as F
 import yaml
 
 from utils.config import ROOT, resolve, run_dir
-from utils.data import CACHE, ann_json, class_names, data_root
+from utils.data import CACHE, ann_json, class_names, data_root, tiles_coco
 
 REPO = ROOT / "third_party" / "D-FINE"
 METRICS = ["mAP50-95", "mAP50", "mAP75", "mAP_small", "mAP_medium", "mAP_large"]
@@ -88,7 +88,7 @@ class DFineAdapter:
                 "num_workers": t.get("workers", 8),
                 "dataset": {
                     "img_folder": str(root / "images" / "train"),
-                    "ann_file": str(int_id_annotations(self.cfg, "train")),
+                    "ann_file": str(self._train_ann()),
                     "transforms": {"ops": train_ops, "policy": {"epoch": stop}},
                 },
                 "collate_fn": {"base_size": s, "base_size_repeat": 20, "stop_epoch": stop},
@@ -103,6 +103,14 @@ class DFineAdapter:
                 },
             },
         }
+
+    def _train_ann(self):
+        """Plain train annotations, or train tiles (+ full images) when data.tiles is set (slicing-aided fine-tuning)."""
+        tiles = self.cfg["data"].get("tiles")
+        if not tiles:
+            return int_id_annotations(self.cfg, "train")
+        return tiles_coco(self.cfg, tiles["size"], tiles.get("overlap", 0.2), tiles.get("min_vis", 0.4),
+                          tiles.get("include_full", True))
 
     def _write_repo_config(self, rd):
         path = rd / "dfine.yml"

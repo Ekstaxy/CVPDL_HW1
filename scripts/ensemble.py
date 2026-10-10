@@ -63,8 +63,17 @@ def _fuse_one(args):
     iid, idx, weights, iou, conf_type = args
     parts = [_G["dets"][i].get(iid, EMPTY) for i in idx]
     w = [weights[i] for i in idx]
-    d = wbf(parts, weights=w, iou_thr=iou, conf_type=conf_type) if sum(len(p) > 0 for p in parts) > 1 else \
-        next((p for p in parts if len(p)), EMPTY)
+    if np.ndim(w) == 2:
+        # class-wise weights (members x classes): fuse each class on its own with that class's weights.
+        # Always go through WBF, so a box seen by one member is scored the same way in every image.
+        out = []
+        for c in np.unique(np.concatenate([p[:, 5] for p in parts])).astype(int):
+            sub = [p[p[:, 5] == c] for p in parts]
+            out.append(wbf(sub, weights=[wi[c] for wi in w], iou_thr=iou, conf_type=conf_type))
+        d = np.concatenate(out) if out else EMPTY
+    else:
+        d = wbf(parts, weights=w, iou_thr=iou, conf_type=conf_type) if sum(len(p) > 0 for p in parts) > 1 else \
+            next((p for p in parts if len(p)), EMPTY)
     width, height = _G["sizes"][iid]
     return iid, finalize_dets(d, width, height, _G["topk"])
 
