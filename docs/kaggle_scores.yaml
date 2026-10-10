@@ -5,3 +5,7 @@ s1_09_yolo11m_1280: 0.29459
 s1_09_yolo11m_1280/eval_slice800_hflip: 0.32198
 s2_05_dfine_l_1280/eval_slice800: 0.35387
 _ensemble/wbf4: 0.37640
+_ensemble/wbf4_l1536: 0.37997
+_ensemble/wbf4_opt: 0.38324
+_ensemble/wbf_s3b: 0.38498
+_ensemble/wbf_tileft: 0.38642
