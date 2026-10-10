@@ -1,0 +1,4 @@
+# Stage 3c: slicing-aided fine-tuning of D-FINE-L 1536, then sliced inference, test CSV and the ensemble.
+#   nohup setsid scripts/run_queue.sh configs/queues/stage3c.txt > results/queue_stage3c.log 2>&1 &
+s3_03_dfine_l_1536_tileft
+!scripts/finish_tileft.sh

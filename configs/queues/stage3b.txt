@@ -1,0 +1,6 @@
+# Stage 3b: shorter D-FINE-L 1536 schedule, then the tuned slice inference, test CSV and a 5-member ensemble.
+#   nohup setsid scripts/run_queue.sh configs/queues/stage3b.txt > results/queue_stage3b.log 2>&1 &
+s3_02_dfine_l_1536_short
+!.venv/bin/python evaluate.py --config results/s3_02_dfine_l_1536_short/config.yaml --tag sl512_o2_up125 "predict.imgsz=1920" "predict.slice={size: 512, overlap: 0.2, imgsz: 1536}"
+!.venv/bin/python test.py --config results/s3_02_dfine_l_1536_short/config.yaml --tag sl512_o2_up125
+!.venv/bin/python -u scripts/ensemble.py --name wbf_s3b --members s3_02_dfine_l_1536_short/sl512_o2_up125 s3_01_dfine_l_1536/sl512_o2_up125 s2_05_dfine_l_1280/sl512_o2_up125 s2_04_yolo11m_1536_aug/slice800_hflip s2_02_yolo11l_1280_aug/sl640_o2_hflip_up125 --min-members 4 --iou 0.7 --weights 1 1 1 1 1 --conf-type avg --workers 16

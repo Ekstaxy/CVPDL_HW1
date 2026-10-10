@@ -1,0 +1,5 @@
+base: s3_01_dfine_l_1536.yaml
+stage: s3
+parent: s3_01_dfine_l_1536
+notes: same as s3_01 but 32 epochs (no-aug stage from epoch 24). s3_01 plateaued at epochs 18-32 (val 0.372-0.375) and fell to 0.360 by epoch 63 before its no-aug stage; this starts the no-aug stage from the plateau
+train: {epochs: 32, no_aug_epochs: 8}

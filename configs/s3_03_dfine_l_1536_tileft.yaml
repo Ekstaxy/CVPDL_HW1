@@ -1,0 +1,7 @@
+base: s3_01_dfine_l_1536.yaml
+stage: s3
+parent: s3_01_dfine_l_1536
+notes: slicing-aided fine-tuning - continue from s3_01 best.pt on 640 px train tiles (20% overlap, resized to 1536) plus the full train images, 4 epochs (last one without augmentation). Inference slices at 512-640 px, so this matches train and test object scales
+model: {weights: results/s3_01_dfine_l_1536/weights/best.pt}
+data: {tiles: {size: 640, overlap: 0.2, include_full: true}}
+train: {epochs: 4, no_aug_epochs: 1}
