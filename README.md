@@ -24,14 +24,12 @@ class-wise NMS (IoU 0.6). The final CSV keeps at most 100 boxes per class per im
 
 ### Reproduce
 
-1. Set up the environment, the D-FINE code and the COCO weights:
+1. Set up the environment and the D-FINE code:
 
    ```bash
-   scripts/setup_env.sh                                   # .venv with requirements.txt (torch 2.5.1, ultralytics 8.4.173)
+   scripts/setup_env.sh                                   # .venv with requirements.txt (torch 2.5.1, ultralytics 8.4.173, gdown)
    git clone https://github.com/Peterande/D-FINE third_party/D-FINE
    git -C third_party/D-FINE checkout 956d170
-   wget -P checkpoints https://github.com/Peterande/storage/releases/download/dfinev1.0/dfine_l_coco.pth
-   # yolo11l.pt and yolo11m.pt download themselves into checkpoints/ on first use
    ```
 
 2. Put the homework data in `dataset/` (`images/{train,val,test}`, `annotations/instances_{train,val}.json`,
@@ -39,10 +37,24 @@ class-wise NMS (IoU 0.6). The final CSV keeps at most 100 boxes per class per im
 
 3. Run one of:
 
+   **A. Inference only, with the trained weights** (about 2 h on one RTX 4090)
+
    ```bash
-   scripts/reproduce_final.sh            # inference only, from results/<id>/weights/   (about 2 h on one RTX 4090)
-   scripts/reproduce_final.sh --train    # train the six models first, then infer        (about 52 h)
+   scripts/download_weights.sh           # the six trained models from Google Drive (gdown, 2.1 GB, MD5-checked)
+   scripts/reproduce_final.sh            # predict val + test with each model, then WBF
    ```
+
+   **B. Train from scratch, then infer** (about 52 h)
+
+   ```bash
+   wget -P checkpoints https://github.com/Peterande/storage/releases/download/dfinev1.0/dfine_l_coco.pth
+   # yolo11l.pt and yolo11m.pt download themselves into checkpoints/ on first use
+   scripts/reproduce_final.sh --train
+   ```
+
+   `--train` trains the six models in order with `scripts/run_experiment.sh` (train, then val CSV + mAP, then
+   test CSV), so `s3_03` can continue from `s3_01`'s `best.pt`. It writes the weights to `results/<id>/weights/`,
+   over the downloaded ones if they are there. Then it runs the same inference and WBF as A.
 
    Both write `submission_test.csv` to the repo root. The val CSV and its score are in `results/_ensemble/final/`.
    With `TAG_SUFFIX=_repro` the member outputs are written next to the existing ones instead of over them.
@@ -93,7 +105,7 @@ To redo a run from scratch, delete `results/<id>/`.
 | `models/` | model adapters: `yolo.py` (Ultralytics), `dfine.py` (official D-FINE repo; adds frozen BatchNorm and tile training) |
 | `utils/` | config, data (tiles, repeat-factor sampling, tile COCO json), postprocess (TTA, slicing, NMS/WBF), metrics + CSV, visualize, logger |
 | `train.py`, `evaluate.py`, `test.py` | training, validation scoring, test submission |
-| `scripts/` | environment, experiment/queue runners, audit, inference sweeps, ensembles, visualization, summary, `reproduce_final.sh` |
+| `scripts/` | environment, experiment/queue runners, audit, inference sweeps, ensembles, visualization, summary, `download_weights.sh`, `reproduce_final.sh` |
 | `tests/` | checks for the CSV format, the metric, slicing and merging |
 | `docs/` | `EXPERIMENTS.md` (generated results table), `PRETRAINED.md`, `kaggle_scores.yaml`, notes, report draft |
 | `checkpoints/` | pretrained weights only |
